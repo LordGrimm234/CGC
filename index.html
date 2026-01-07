@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Common Good Company ChatBot</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --glass: rgba(255, 255, 255, 0.1);
@@ -54,12 +55,18 @@
 
         /* Message Bubbles */
         .message {
-            max-width: 80%;
+            max-width: 85%;
             padding: 12px 16px;
             border-radius: 15px;
             font-size: 0.95rem;
             line-height: 1.4;
+            word-wrap: break-word;
         }
+
+        /* Styling for the converted Markdown inside bubbles */
+        .message p { margin: 5px 0; }
+        .message h1, .message h2, .message h3 { margin: 10px 0 5px 0; font-size: 1rem; color: #fff; }
+        .message ul, .message ol { margin: 5px 0; padding-left: 20px; }
 
         .user-msg {
             align-self: flex-end;
@@ -120,14 +127,14 @@
     </div>
 
     <div class="input-area">
-        <input type="text" id="userInput" placeholder="Type a message...">
+        <input type="text" id="userInput" placeholder="Type a message..." onkeypress="if(event.key === 'Enter') sendMessage()">
         <button onclick="sendMessage()">Send</button>
     </div>
 </div>
 
 <script>
     const API_URL = "https://wiuglzsjyzogfpqjlhvp.supabase.co/functions/v1/chat-with-ai";
-    const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpdWdsenNqeXpvZ2ZwcWpsaHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MzY3MjAsImV4cCI6MjA4MzIxMjcyMH0.P45KBpD1fbLu3tCu5Cbt31m0vhcTQfFc_tWCyX5FAeM"; // PUT YOUR ANON KEY HERE
+    const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpdWdsenNqeXpvZ2ZwcWpsaHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MzY3MjAsImV4cCI6MjA4MzIxMjcyMH0.P45KBpD1fbLu3tCu5Cbt31m0vhcTQfFc_tWCyX5FAeM";
 
     async function sendMessage() {
         const input = document.getElementById('userInput');
@@ -136,12 +143,12 @@
         
         if (!text) return;
 
-        // 1. Add User Message to UI
-        appendMessage(text, 'user-msg');
+        // 1. Add User Message
+        appendMessage(text, 'user-msg', false);
         input.value = '';
 
-        // 2. Show "Thinking..."
-        const loadingDiv = appendMessage("Thinking...", 'bot-msg');
+        // 2. Add Loading Indicator
+        const loadingDiv = appendMessage("Thinking...", 'bot-msg', false);
 
         try {
             const response = await fetch(API_URL, {
@@ -154,7 +161,13 @@
             });
 
             const data = await response.json();
-            loadingDiv.innerText = data.reply || "Sorry, I encountered an error.";
+            
+            // 3. Render the reply using marked.parse for clean formatting
+            if (data.reply) {
+                loadingDiv.innerHTML = marked.parse(data.reply);
+            } else {
+                loadingDiv.innerText = "Sorry, I couldn't get a response.";
+            }
             
         } catch (error) {
             loadingDiv.innerText = "Error: Could not connect to the AI.";
@@ -163,11 +176,17 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function appendMessage(text, className) {
+    function appendMessage(text, className, isMarkdown) {
         const chatBox = document.getElementById('chatBox');
         const div = document.createElement('div');
         div.className = `message ${className}`;
-        div.innerText = text;
+        
+        if (isMarkdown) {
+            div.innerHTML = marked.parse(text);
+        } else {
+            div.innerText = text;
+        }
+        
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
         return div;
@@ -176,3 +195,4 @@
 
 </body>
 </html>
+
