@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Common Good Company ChatBot</title>
+    <title>Common Good Company | Executive Search</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
@@ -22,10 +22,10 @@
             margin: 0;
         }
 
-        /* WIDER CONTAINER FOR DESKTOP COMFORT */
+        /* 900px Wide Container for Desktop Professionalism */
         .chat-container {
-            width: 90%;
-            max-width: 900px; /* Boss's requirement: Widen enough for comfortable computer use */
+            width: 95%;
+            max-width: 900px;
             height: 85vh;
             background: var(--glass);
             backdrop-filter: blur(15px);
@@ -63,16 +63,17 @@
             color: white;
         }
 
-        /* Styling for Markdown/Triage Blocks */
+        /* Markdown Styling for Tables and Lists */
         .message p { margin: 0 0 10px 0; }
         .message strong { color: #fff; font-weight: bold; }
         .message ul { margin: 10px 0; padding-left: 25px; }
         .message li { margin-bottom: 8px; }
+        .message table { border-collapse: collapse; width: 100%; margin: 10px 0; background: rgba(0,0,0,0.2); border-radius: 8px; }
+        .message th, .message td { border: 1px solid var(--border); padding: 8px; text-align: left; }
 
         .user-msg {
             align-self: flex-end;
             background: #6a11cb;
-            color: white;
             border-bottom-right-radius: 2px;
         }
 
@@ -120,15 +121,15 @@
 <div class="chat-container">
     <div class="header">
         <h2 style="margin:0; font-size: 1.5rem;">Common Good Company</h2>
-        <small style="opacity: 0.8;">Executive Consultant Matching Assistant</small>
+        <small style="opacity: 0.8;">Executive Consulting Concierge</small>
     </div>
     
     <div class="chat-box" id="chatBox">
-        <div class="message bot-msg">Hello! I am the CGC Assistant. How can I help you find the right expertise today?</div>
+        <div class="message bot-msg">Welcome. I am the CGC Executive Assistant. How may I assist your business needs today?</div>
     </div>
 
     <div class="input-area">
-        <input type="text" id="userInput" placeholder="Search consultants or ask a question..." onkeypress="if(event.key === 'Enter') sendMessage()">
+        <input type="text" id="userInput" placeholder="Discuss your requirements..." onkeypress="if(event.key === 'Enter') sendMessage()">
         <button onclick="sendMessage()">Send</button>
     </div>
 </div>
@@ -137,18 +138,19 @@
     const API_URL = "https://wiuglzsjyzogfpqjlhvp.supabase.co/functions/v1/chat-with-ai";
     const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpdWdsenNqeXpvZ2ZwcWpsaHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MzY3MjAsImV4cCI6MjA4MzIxMjcyMH0.P45KBpD1fbLu3tCu5Cbt31m0vhcTQfFc_tWCyX5FAeM";
 
+    // SESSION MEMORY: This makes the bot "intelligent"
+    let chatHistory = [];
+
     async function sendMessage() {
         const input = document.getElementById('userInput');
         const chatBox = document.getElementById('chatBox');
         const text = input.value.trim();
         if (!text) return;
 
-        // Add user message to UI
         appendMessage(text, 'user-msg');
         input.value = '';
 
-        // Add loading placeholder
-        const loadingDiv = appendMessage("Checking database...", 'bot-msg');
+        const loadingDiv = appendMessage("Consulting Executive Database...", 'bot-msg');
 
         try {
             const response = await fetch(API_URL, {
@@ -157,16 +159,23 @@
                     'Authorization': `Bearer ${ANON_KEY}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message: text })
+                body: JSON.stringify({ 
+                    message: text,
+                    history: chatHistory 
+                })
             });
 
             const data = await response.json();
+            const reply = data.reply || "I apologize, I've encountered a connection issue. Please try again.";
             
-            // Render the AI response (supports the new Triage multi-question blocks)
-            loadingDiv.innerHTML = marked.parse(data.reply || "I encountered an issue. Please try again.");
+            loadingDiv.innerHTML = marked.parse(reply);
+
+            // STORE CONTEXT: Update history for the next message
+            chatHistory.push({ role: "user", parts: [{ text: text }] });
+            chatHistory.push({ role: "model", parts: [{ text: reply }] });
             
         } catch (error) {
-            loadingDiv.innerText = "Error connecting to AI. Please ensure the backend is deployed.";
+            loadingDiv.innerText = "Connection error. Please ensure the backend function is active.";
         }
         
         chatBox.scrollTop = chatBox.scrollHeight;
