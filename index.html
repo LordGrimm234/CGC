@@ -22,9 +22,11 @@
             margin: 0;
         }
 
+        /* WIDER CONTAINER FOR DESKTOP COMFORT */
         .chat-container {
-            width: 400px;
-            height: 600px;
+            width: 90%;
+            max-width: 900px; /* Boss's requirement: Widen enough for comfortable computer use */
+            height: 85vh;
             background: var(--glass);
             backdrop-filter: blur(15px);
             border: 1px solid var(--border);
@@ -36,7 +38,7 @@
         }
 
         .header {
-            padding: 20px;
+            padding: 25px;
             background: rgba(255, 255, 255, 0.05);
             border-bottom: 1px solid var(--border);
             text-align: center;
@@ -45,25 +47,27 @@
 
         .chat-box {
             flex: 1;
-            padding: 20px;
+            padding: 30px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
 
         .message {
             max-width: 85%;
-            padding: 12px 16px;
+            padding: 15px 20px;
             border-radius: 15px;
-            font-size: 0.95rem;
-            line-height: 1.4;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: white;
         }
 
-        /* This is the magic part: it styles the lists and bold text once converted */
-        .message p { margin: 0 0 8px 0; }
+        /* Styling for Markdown/Triage Blocks */
+        .message p { margin: 0 0 10px 0; }
         .message strong { color: #fff; font-weight: bold; }
-        .message ul { margin: 5px 0; padding-left: 20px; }
+        .message ul { margin: 10px 0; padding-left: 25px; }
+        .message li { margin-bottom: 8px; }
 
         .user-msg {
             align-self: flex-end;
@@ -76,14 +80,13 @@
             align-self: flex-start;
             background: var(--glass);
             border: 1px solid var(--border);
-            color: white;
             border-bottom-left-radius: 2px;
         }
 
         .input-area {
-            padding: 20px;
+            padding: 25px;
             display: flex;
-            gap: 10px;
+            gap: 15px;
             background: rgba(0, 0, 0, 0.2);
         }
 
@@ -91,36 +94,41 @@
             flex: 1;
             background: transparent;
             border: 1px solid var(--border);
-            padding: 10px;
-            border-radius: 10px;
+            padding: 12px 15px;
+            border-radius: 12px;
             color: white;
             outline: none;
+            font-size: 1rem;
         }
 
         button {
             background: #2575fc;
             border: none;
             color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
+            padding: 10px 25px;
+            border-radius: 12px;
             cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
         }
+
+        button:hover { background: #1a5dbb; }
     </style>
 </head>
 <body>
 
 <div class="chat-container">
     <div class="header">
-        <h2 style="margin:0; font-size: 1.2rem;">Common Good Company</h2>
-        <small style="opacity: 0.7;">AI Assistant</small>
+        <h2 style="margin:0; font-size: 1.5rem;">Common Good Company</h2>
+        <small style="opacity: 0.8;">Executive Consultant Matching Assistant</small>
     </div>
     
     <div class="chat-box" id="chatBox">
-        <div class="message bot-msg">Hello! I am the Common Good Assistant. Ask me anything!</div>
+        <div class="message bot-msg">Hello! I am the CGC Assistant. How can I help you find the right expertise today?</div>
     </div>
 
     <div class="input-area">
-        <input type="text" id="userInput" placeholder="Type a message..." onkeypress="if(event.key === 'Enter') sendMessage()">
+        <input type="text" id="userInput" placeholder="Search consultants or ask a question..." onkeypress="if(event.key === 'Enter') sendMessage()">
         <button onclick="sendMessage()">Send</button>
     </div>
 </div>
@@ -135,12 +143,12 @@
         const text = input.value.trim();
         if (!text) return;
 
-        // Add user message
+        // Add user message to UI
         appendMessage(text, 'user-msg');
         input.value = '';
 
         // Add loading placeholder
-        const loadingDiv = appendMessage("Thinking...", 'bot-msg');
+        const loadingDiv = appendMessage("Checking database...", 'bot-msg');
 
         try {
             const response = await fetch(API_URL, {
@@ -154,11 +162,11 @@
 
             const data = await response.json();
             
-            // CRITICAL FIX: Use innerHTML and marked.parse() here
-            loadingDiv.innerHTML = marked.parse(data.reply);
+            // Render the AI response (supports the new Triage multi-question blocks)
+            loadingDiv.innerHTML = marked.parse(data.reply || "I encountered an issue. Please try again.");
             
         } catch (error) {
-            loadingDiv.innerText = "Error connecting to AI.";
+            loadingDiv.innerText = "Error connecting to AI. Please ensure the backend is deployed.";
         }
         
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -169,7 +177,6 @@
         const div = document.createElement('div');
         div.className = `message ${className}`;
         
-        // If it's the bot, we check for markdown immediately
         if (className === 'bot-msg') {
             div.innerHTML = marked.parse(text);
         } else {
