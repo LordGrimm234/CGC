@@ -140,12 +140,12 @@
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = data.map(c => `
             <tr>
-                <td><strong>${c.Name}</strong></td>
-                <td>${c.Specialization}</td>
-                <td>${c.Geography}</td>
-                <td>${Array.isArray(c.Skills) ? c.Skills.join(', ') : c.Skills}</td>
+                <td><strong>${c.name}</strong></td>
+                <td>${c.specialization}</td>
+                <td>${c.geography}</td>
+                <td>${Array.isArray(c.skills) ? c.skills.join(', ') : c.skills}</td>
                 <td>
-                    <button class="btn btn-danger" onclick="deleteConsultant('${c.Name}')">Delete</button>
+                    <button class="btn btn-danger" onclick="deleteConsultant('${c.name}')">Delete</button>
                 </td>
             </tr>
         `).join('');
@@ -156,15 +156,15 @@
         const skillsArray = document.getElementById('newSkills').value.split(',').map(s => s.trim());
         
         const newEntry = {
-            Name: document.getElementById('newName').value,
-            Age: parseInt(document.getElementById('newAge').value),
-            Experience: document.getElementById('newExp').value,
-            Skills: skillsArray,
-            Specialization: document.getElementById('newSpec').value,
-            Geography: document.getElementById('newGeo').value,
-            Availability: document.getElementById('newAvail').value,
-            Contact: document.getElementById('newContact').value,
-            Partnership: document.getElementById('newPartner').value
+            name: document.getElementById('newName').value,
+            age: parseInt(document.getElementById('newAge').value),
+            experience: document.getElementById('newExp').value,
+            skills: skillsArray,
+            specialization: document.getElementById('newSpec').value,
+            geography: document.getElementById('newGeo').value,
+            availability: document.getElementById('newAvail').value,
+            contact: document.getElementById('newContact').value,
+            partnership: document.getElementById('newPartner').value
         };
 
         const { error } = await _supabase.from('consultants').insert([newEntry]);
@@ -180,7 +180,7 @@
 
     async function deleteConsultant(name) {
         if (confirm(`Permanent Delete: ${name}?`)) {
-            const { error } = await _supabase.from('consultants').delete().eq('Name', name);
+            const { error } = await _supabase.from('consultants').delete().eq('name', name);
             if (error) alert(error.message); else loadConsultants();
         }
     }
