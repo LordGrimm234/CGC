@@ -3,83 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CGC Admin Portal | AI Entry</title>
+    <title>CGC Admin Portal | AI Data Entry</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+        
+        /* Main Layout Grid */
+        .dashboard-wrapper { display: grid; grid-template-columns: 1fr 380px; gap: 20px; max-width: 1400px; margin: 0 auto; }
+        .main-content { min-width: 0; }
+        
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
         
-        /* AI Chat Styling */
-        .ai-chat-container { height: 85vh; display: flex; flex-direction: column; background: #1e293b; color: white; border-radius: 12px; overflow: hidden; position: sticky; top: 20px; }
-        .ai-header { padding: 15px; background: #0f172a; border-bottom: 1px solid #334155; text-align: center; }
-        #aiMessages { flex: 1; padding: 15px; overflow-y: auto; font-size: 14px; }
-        .ai-input-area { padding: 15px; background: #0f172a; display: flex; gap: 10px; }
-        .ai-input-area input { flex: 1; background: #1e293b; border: 1px solid #334155; color: white; padding: 8px; border-radius: 6px; }
+        /* AI Sidebar Styling */
+        .ai-sidebar { height: 90vh; display: flex; flex-direction: column; background: #1e293b; color: white; border-radius: 12px; position: sticky; top: 20px; border: 1px solid #334155; }
+        .ai-header { padding: 15px; background: #0f172a; border-radius: 12px 12px 0 0; border-bottom: 1px solid #334155; }
+        #aiMessages { flex: 1; padding: 15px; overflow-y: auto; font-size: 14px; display: flex; flex-direction: column; gap: 10px; }
+        .ai-input-area { padding: 15px; background: #0f172a; border-radius: 0 0 12px 12px; display: flex; gap: 8px; }
+        .ai-input-area input { flex: 1; background: #1e293b; border: 1px solid #475569; color: white; padding: 10px; border-radius: 6px; outline: none; }
         
-        /* Table & Form */
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        /* Existing Form & Table Styles */
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-        .btn { padding: 8px 15px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        .btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; }
         .btn-primary { background: var(--primary); color: white; }
         
-        #admin-section, #auth-section { display: none; }
-        .login-card { grid-column: span 2; max-width: 400px; margin: 100px auto; }
+        #admin-wrapper, #auth-section { display: none; }
+        .login-card { max-width: 400px; margin: 100px auto; text-align: center; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="auth-section" class="card login-card">
-        <h2>Admin Login</h2>
-        <input type="email" id="email" placeholder="Email" style="margin-bottom:10px">
-        <input type="password" id="password" placeholder="Password" style="margin-bottom:20px">
-        <button class="btn btn-primary" onclick="handleLogin()">Sign In</button>
-    </div>
+<div id="auth-section" class="card login-card">
+    <h2>CGC Admin Login</h2>
+    <input type="email" id="email" placeholder="Admin Email" style="margin-bottom:10px">
+    <input type="password" id="password" placeholder="Password" style="margin-bottom:20px">
+    <button class="btn btn-primary" onclick="handleLogin()">Sign In</button>
+</div>
 
-    <div id="admin-section">
-        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px">
-            <h2>CGC Internal Management</h2>
+<div id="admin-wrapper" class="dashboard-wrapper">
+    <div class="main-content">
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:20px">
+            <h2 style="margin:0">CGC Internal Management</h2>
             <button class="btn" style="background:#64748b; color:white" onclick="handleLogout()">Logout</button>
         </div>
 
         <div class="card">
-            <h3>Manual / AI Prepared Entry</h3>
-            <div class="form-grid" id="entryForm">
-                <input type="text" id="newName" placeholder="Name">
-                <input type="number" id="newAge" placeholder="Age">
-                <input type="text" id="newExp" placeholder="Experience">
-                <input type="text" id="newSpec" placeholder="Specialization">
-                <input type="text" id="newGeo" placeholder="Geography">
-                <input type="text" id="newAvail" placeholder="Availability">
-                <input type="text" id="newContact" placeholder="Contact">
-                <input type="text" id="newPartner" placeholder="Partnership">
-                <input type="text" id="newSkills" placeholder="Skills (comma separated)" style="grid-column: span 2">
+            <h3>Consultant Entry Form</h3>
+            <div class="form-grid">
+                <div><label>Name</label><input type="text" id="newName"></div>
+                <div><label>Age</label><input type="number" id="newAge"></div>
+                <div><label>Experience</label><input type="text" id="newExp"></div>
+                <div><label>Specialization</label><input type="text" id="newSpec"></div>
+                <div><label>Geography</label><input type="text" id="newGeo"></div>
+                <div><label>Availability</label><input type="text" id="newAvail"></div>
+                <div><label>Contact</label><input type="text" id="newContact"></div>
+                <div><label>Partnership</label><input type="text" id="newPartner"></div>
+                <div style="grid-column: span 2"><label>Skills</label><input type="text" id="newSkills"></div>
             </div>
-            <button class="btn btn-primary" style="margin-top:15px" onclick="addConsultant()">Save to Database</button>
+            <button class="btn btn-primary" style="margin-top:20px" onclick="addConsultant()">Save to Database</button>
         </div>
 
         <div class="card">
             <h3>Registry</h3>
             <table>
-                <thead><tr><th>Name</th><th>Spec</th><th>Geo</th><th>Action</th></tr></thead>
+                <thead><tr><th>Name</th><th>Specialization</th><th>Geography</th><th>Action</th></tr></thead>
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
     </div>
 
-    <div id="ai-sidebar" style="display:none">
-        <div class="ai-chat-container">
-            <div class="ai-header"><strong>CGC Data Assistant</strong><br><small>Paste CVs or describe consultants</small></div>
-            <div id="aiMessages"></div>
-            <div class="ai-input-area">
-                <input type="text" id="aiInput" placeholder="Describe Ryan..." onkeypress="if(event.key==='Enter') chatWithAI()">
-                <button class="btn btn-primary" onclick="chatWithAI()">Go</button>
+    <div class="ai-sidebar">
+        <div class="ai-header">
+            <strong>CGC Data Intelligence</strong><br>
+            <small style="opacity:0.7">Extract info from CVs or notes</small>
+        </div>
+        <div id="aiMessages">
+            <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
+                Hello Admin. You can paste a full CV here or simply say: "I met a consultant named Sarah from Berlin who specializes in Finance..."
             </div>
+        </div>
+        <div class="ai-input-area">
+            <input type="text" id="aiInput" placeholder="Paste CV text here..." onkeypress="if(event.key==='Enter') chatWithAI()">
+            <button class="btn btn-primary" onclick="chatWithAI()">Go</button>
         </div>
     </div>
 </div>
@@ -89,16 +98,16 @@
     const S_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpdWdsenNqeXpvZ2ZwcWpsaHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MzY3MjAsImV4cCI6MjA4MzIxMjcyMH0.P45KBpD1fbLu3tCu5Cbt31m0vhcTQfFc_tWCyX5FAeM";
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
-    // SECURITY: Logout on refresh
+    // SECURITY: Force logout on page refresh
     window.onload = async () => {
-        await _supabase.auth.signOut(); // Forces logout on every refresh
+        await _supabase.auth.signOut();
         showLogin();
     };
 
     async function handleLogin() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const { error } = await _supabase.auth.signInWithPassword({ email, password });
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('password').value;
+        const { error } = await _supabase.auth.signInWithPassword({ email: e, password: p });
         if (error) alert(error.message); else showAdmin();
     }
 
@@ -106,43 +115,41 @@
 
     function showLogin() { 
         document.getElementById('auth-section').style.display = 'block';
-        document.getElementById('admin-section').style.display = 'none';
-        document.getElementById('ai-sidebar').style.display = 'none';
+        document.getElementById('admin-wrapper').style.display = 'none';
     }
     
     function showAdmin() {
         document.getElementById('auth-section').style.display = 'none';
-        document.getElementById('admin-section').style.display = 'block';
-        document.getElementById('ai-sidebar').style.display = 'block';
+        document.getElementById('admin-wrapper').style.display = 'grid';
         loadConsultants();
     }
 
     async function chatWithAI() {
         const input = document.getElementById('aiInput');
         const box = document.getElementById('aiMessages');
-        const text = input.value;
+        const text = input.value.trim();
         if(!text) return;
 
-        box.innerHTML += `<div><b>You:</b> ${text}</div>`;
+        box.innerHTML += `<div style="text-align:right; font-weight:bold;">Admin: ${text.substring(0, 50)}...</div>`;
         input.value = "";
 
-        // Calling your same AI function but with an "Extraction" prompt
+        // Calling the AI to extract data
         const response = await fetch(`${S_URL}/functions/v1/chat-with-ai`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${S_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                message: `EXTRACT DATA from this text for our database. Return ONLY a JSON object with keys: name, age, experience, specialization, geography, availability, contact, partnership, and skills (as array). Text: ${text}`,
+                message: `Task: Extract consultant details. Return ONLY a valid JSON object with keys: name, age, experience, specialization, geography, availability, contact, partnership, and skills (as array). Use 'N/A' for missing fields. TEXT: ${text}`,
                 history: [] 
             })
         });
 
         const data = await response.json();
         try {
-            // Clean the AI response to find the JSON
-            const jsonStr = data.reply.match(/\{.*\}/s)[0];
-            const parsed = JSON.parse(jsonStr);
+            // Find the JSON block in AI reply
+            const jsonMatch = data.reply.match(/\{[\s\S]*\}/);
+            const parsed = JSON.parse(jsonMatch[0]);
             
-            // Auto-fill the form!
+            // Map JSON to the visible Form fields
             document.getElementById('newName').value = parsed.name || "";
             document.getElementById('newAge').value = parsed.age || "";
             document.getElementById('newExp').value = parsed.experience || "";
@@ -153,9 +160,9 @@
             document.getElementById('newPartner').value = parsed.partnership || "";
             document.getElementById('newSkills').value = Array.isArray(parsed.skills) ? parsed.skills.join(', ') : "";
 
-            box.innerHTML += `<div style="color:#4ade80"><b>AI:</b> I've prepared the form for ${parsed.name || 'this consultant'}. Check the fields and click Save!</div>`;
+            box.innerHTML += `<div style="background:#22c55e; padding:10px; border-radius:8px; color:white;">AI: I've extracted the data for <b>${parsed.name}</b>. Please review the form and click "Save to Database" to confirm.</div>`;
         } catch(e) {
-            box.innerHTML += `<div><b>AI:</b> ${data.reply}</div>`;
+            box.innerHTML += `<div style="color:#ef4444;">AI: I couldn't format the data automatically. Reply: ${data.reply}</div>`;
         }
         box.scrollTop = box.scrollHeight;
     }
@@ -165,10 +172,10 @@
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = data.map(c => `
             <tr>
-                <td>${c.name}</td>
+                <td><strong>${c.name}</strong></td>
                 <td>${c.specialization}</td>
                 <td>${c.geography}</td>
-                <td><button class="btn btn-danger" onclick="deleteConsultant('${c.name}')">Del</button></td>
+                <td><button class="btn" style="background:#ef4444; color:white" onclick="deleteConsultant('${c.name}')">Delete</button></td>
             </tr>
         `).join('');
     }
@@ -186,11 +193,15 @@
             skills: document.getElementById('newSkills').value.split(',').map(s => s.trim())
         };
         const { error } = await _supabase.from('consultants').insert([entry]);
-        if(error) alert(error.message); else { alert("Added!"); loadConsultants(); }
+        if(error) alert(error.message); else { alert("Saved!"); loadConsultants(); clearForm(); }
+    }
+
+    function clearForm() {
+        document.querySelectorAll('.form-grid input').forEach(i => i.value = "");
     }
 
     async function deleteConsultant(name) {
-        if(confirm("Delete?")) {
+        if(confirm(`Delete ${name}?`)) {
             await _supabase.from('consultants').delete().eq('name', name);
             loadConsultants();
         }
