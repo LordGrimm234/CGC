@@ -120,7 +120,11 @@
         box.innerHTML += `<div class="msg ai" id="${tid}">...</div>`;
         box.scrollTop = box.scrollHeight;
 
-        // FETCH SNAPSHOT FIRST (This solves the Edge Function error)
+        // AUTH CHECK: Get the session token to prove identity to the backend
+        const { data: sessionData } = await _supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+
+        // FETCH SNAPSHOT
         const { data: db } = await _supabase.from('consultants').select('id, name, specialization, geography');
 
         const systemPrompt = `YOU ARE A DB MANAGER. 
@@ -137,19 +141,30 @@
         try {
             const response = await fetch(`${S_URL}/functions/v1/chat-with-ai`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${S_KEY}`, 'Content-Type': 'application/json' },
+                headers: { 
+                    'Authorization': `Bearer ${token}`, // Passing the Credential Token
+                    'Content-Type': 'application/json' 
+                },
                 body: JSON.stringify({ message: systemPrompt, history: [] })
             });
             const resData = await response.json();
-            const bubble = document.getElementById(tid);
             
+            // Handle unauthorized error from backend
+            if (resData.error) {
+                document.getElementById(tid).innerHTML = `<b>Error:</b> ${resData.error}`;
+                return;
+            }
+
+            const bubble = document.getElementById(tid);
             const match = resData.reply.match(/\{[\s\S]*\}/);
+            
             if (match) {
                 const json = JSON.parse(match[0]);
                 if (json.action === "DELETE") {
                     bubble.innerHTML = `Target identified: <b>${json.name}</b>.`;
-                    if(confirm("Delete " + json.name + "?")) {
-                        await _supabase.from('consultants').delete().eq('id', json.id);
+                    if(confirm("Confirm: Permanently delete " + json.name + "?")) {
+                        const { error } = await _supabase.from('consultants').delete().eq('id', json.id);
+                        if (error) alert("Deletion failed: " + error.message);
                         loadConsultants();
                         bubble.innerHTML = `Purged <b>${json.name}</b> from database.`;
                     }
@@ -161,7 +176,7 @@
                 bubble.innerHTML = resData.reply;
             }
         } catch(e) {
-            document.getElementById(tid).innerHTML = "Connectivity error. Try again.";
+            document.getElementById(tid).innerHTML = "System Busy. Please try again.";
         }
         box.scrollTop = box.scrollHeight;
     }
@@ -203,7 +218,8 @@
             partnership: document.getElementById('newPartner').value,
             skills: document.getElementById('newSkills').value.split(',').map(s => s.trim())
         };
-        await _supabase.from('consultants').insert([entry]);
+        const { error } = await _supabase.from('consultants').insert([entry]);
+        if (error) alert(error.message);
         loadConsultants(); clearForm();
     }
 
