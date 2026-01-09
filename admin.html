@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGC Admin Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        th { background: #f1f5f9; font-weight: 600; }
+        .btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; border: none; font-weight: 500; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .form-group { margin-bottom: 15px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+        #auth-section, #admin-section { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>CGC Internal Management</h2>
+
+    <div id="auth-section" class="card">
+        <h3>Admin Login</h3>
+        <div class="form-group"><input type="email" id="email" placeholder="Email"></div>
+        <div class="form-group"><input type="password" id="password" placeholder="Password"></div>
+        <button class="btn btn-primary" onclick="handleLogin()">Login</button>
+    </div>
+
+    <div id="admin-section">
+        <div class="card">
+            <h3>Add New Consultant</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                <input type="text" id="newName" placeholder="Name">
+                <input type="number" id="newAge" placeholder="Age">
+                <input type="text" id="newExp" placeholder="Experience (e.g. 10 years)">
+                <input type="text" id="newSkills" placeholder="Skills (comma separated)">
+                <input type="text" id="newSpec" placeholder="Specialization">
+                <input type="text" id="newGeo" placeholder="Geography">
+                <select id="newAvail">
+                    <option value="Available">Available</option>
+                    <option value="Unavailable">Unavailable</option>
+                </select>
+                <input type="text" id="newContact" placeholder="Contact Email">
+                <input type="text" id="newPartner" placeholder="Partnership Level">
+            </div>
+            <button class="btn btn-primary" style="margin-top: 15px;" onclick="addConsultant()">Save Consultant</button>
+        </div>
+
+        <div class="card">
+            <h3>Consultant Registry</h3>
+            <div style="overflow-x: auto;">
+                <table id="consultantTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th><th>Skills</th><th>Geography</th><th>Availability</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <button class="btn" onclick="handleLogout()">Logout</button>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = "AIzaSyDyxLXiN8ASvs9XKW6RmrNfQ2xLF8GFRkY";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpdWdsenNqeXpvZ2ZwcWpsaHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MzY3MjAsImV4cCI6MjA4MzIxMjcyMH0.P45KBpD1fbLu3tCu5Cbt31m0vhcTQfFc_tWCyX5FAeM";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 1. Check Auth Status on Load
+    window.onload = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) { showAdmin(); } else { showLogin(); }
+    };
+
+    async function handleLogin() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) alert(error.message); else showAdmin();
+    }
+
+    async function handleLogout() {
+        await supabase.auth.signOut();
+        location.reload();
+    }
+
+    function showLogin() { document.getElementById('auth-section').style.display = 'block'; }
+    
+    async function showAdmin() {
+        document.getElementById('auth-section').style.display = 'none';
+        document.getElementById('admin-section').style.display = 'block';
+        loadConsultants();
+    }
+
+    async function loadConsultants() {
+        const { data, error } = await supabase.from('consultants').select('*');
+        if (error) return console.error(error);
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = data.map(c => `
+            <tr>
+                <td>${c.Name}</td>
+                <td>${Array.isArray(c.Skills) ? c.Skills.join(', ') : c.Skills}</td>
+                <td>${c.Geography}</td>
+                <td>${c.Availability}</td>
+                <td>
+                    <button class="btn btn-danger" onclick="deleteConsultant('${c.Name}')">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function addConsultant() {
+        const skillsArray = document.getElementById('newSkills').value.split(',').map(s => s.trim());
+        const newEntry = {
+            Name: document.getElementById('newName').value,
+            Age: parseInt(document.getElementById('newAge').value),
+            Experience: document.getElementById('newExp').value,
+            Skills: skillsArray,
+            Specialization: document.getElementById('newSpec').value,
+            Geography: document.getElementById('newGeo').value,
+            Availability: document.getElementById('newAvail').value,
+            Contact: document.getElementById('newContact').value,
+            Partnership: document.getElementById('newPartner').value
+        };
+
+        const { error } = await supabase.from('consultants').insert([newEntry]);
+        if (error) alert("Error: " + error.message); else loadConsultants();
+    }
+
+    async function deleteConsultant(name) {
+        if (confirm(`Are you sure you want to delete ${name}?`)) {
+            const { error } = await supabase.from('consultants').delete().eq('Name', name);
+            if (error) alert(error.message); else loadConsultants();
+        }
+    }
+</script>
+</body>
+</html>
