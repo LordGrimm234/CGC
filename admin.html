@@ -7,89 +7,120 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-        th { background: #f1f5f9; font-weight: 600; }
-        .btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; border: none; font-weight: 500; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        h2, h3 { color: var(--primary); margin-top: 0; }
+        
+        /* Grid for the Input Form */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #64748b; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        
+        /* Table Styling */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 14px; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f1f5f9; font-weight: 600; font-size: 13px; text-transform: uppercase; }
+        
+        /* Buttons */
+        .btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-danger { background: #ef4444; color: white; }
-        .form-group { margin-bottom: 15px; }
-        input, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-danger { background: #ef4444; color: white; font-size: 12px; }
+        
+        /* Sections Visibility */
         #auth-section, #admin-section { display: none; }
+        
+        /* Login Specific */
+        .login-card { max-width: 400px; margin: 100px auto; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>CGC Internal Management</h2>
-
-    <div id="auth-section" class="card">
-        <h3>Admin Login</h3>
-        <div class="form-group"><input type="email" id="email" placeholder="Email"></div>
-        <div class="form-group"><input type="password" id="password" placeholder="Password"></div>
-        <button class="btn btn-primary" onclick="handleLogin()">Login</button>
+    <div id="auth-section" class="card login-card">
+        <h2>CGC Admin Login</h2>
+        <p>Please sign in to manage the consultant database.</p>
+        <input type="email" id="email" placeholder="Admin Email" style="margin-bottom: 10px;">
+        <input type="password" id="password" placeholder="Password" style="margin-bottom: 20px;">
+        <button class="btn btn-primary" onclick="handleLogin()">Sign In</button>
     </div>
 
     <div id="admin-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>CGC Internal Management</h2>
+            <button class="btn" style="background: #64748b; color: white;" onclick="handleLogout()">Logout</button>
+        </div>
+
         <div class="card">
             <h3>Add New Consultant</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-                <input type="text" id="newName" placeholder="Name">
-                <input type="number" id="newAge" placeholder="Age">
-                <input type="text" id="newExp" placeholder="Experience (e.g. 10 years)">
-                <input type="text" id="newSkills" placeholder="Skills (comma separated)">
-                <input type="text" id="newSpec" placeholder="Specialization">
-                <input type="text" id="newGeo" placeholder="Geography">
-                <select id="newAvail">
-                    <option value="Available">Available</option>
-                    <option value="Unavailable">Unavailable</option>
-                </select>
-                <input type="text" id="newContact" placeholder="Contact Email">
-                <input type="text" id="newPartner" placeholder="Partnership Level">
+            <div class="form-grid">
+                <div class="form-group"><label>Full Name</label><input type="text" id="newName"></div>
+                <div class="form-group"><label>Age</label><input type="number" id="newAge"></div>
+                <div class="form-group"><label>Experience</label><input type="text" id="newExp" placeholder="e.g. 15 years"></div>
+                <div class="form-group"><label>Specialization</label><input type="text" id="newSpec"></div>
+                <div class="form-group"><label>Geography</label><input type="text" id="newGeo"></div>
+                <div class="form-group"><label>Availability</label><input type="text" id="newAvail" placeholder="e.g. Available"></div>
+                <div class="form-group"><label>Contact</label><input type="email" id="newContact"></div>
+                <div class="form-group"><label>Partnership</label><input type="text" id="newPartner"></div>
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Skills (comma separated)</label>
+                    <input type="text" id="newSkills" placeholder="Strategy, SAP, Logistics">
+                </div>
             </div>
-            <button class="btn btn-primary" style="margin-top: 15px;" onclick="addConsultant()">Save Consultant</button>
+            <button class="btn btn-primary" onclick="addConsultant()">Save to Database</button>
         </div>
 
         <div class="card">
             <h3>Consultant Registry</h3>
-            <div style="overflow-x: auto;">
+            <div class="table-container">
                 <table id="consultantTable">
                     <thead>
                         <tr>
-                            <th>Name</th><th>Skills</th><th>Geography</th><th>Availability</th><th>Actions</th>
+                            <th>Name</th>
+                            <th>Specialization</th>
+                            <th>Geography</th>
+                            <th>Skills</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody"></tbody>
+                    <tbody id="tableBody">
+                        </tbody>
                 </table>
             </div>
         </div>
-        <button class="btn" onclick="handleLogout()">Logout</button>
     </div>
 </div>
 
 <script>
-    const SUPABASE_URL = "AIzaSyDyxLXiN8ASvs9XKW6RmrNfQ2xLF8GFRkY";
+    // --- CONFIGURATION ---
+    const SUPABASE_URL = "https://wiuglzsjyzogfpqjlhvp.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpdWdsenNqeXpvZ2ZwcWpsaHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MzY3MjAsImV4cCI6MjA4MzIxMjcyMH0.P45KBpD1fbLu3tCu5Cbt31m0vhcTQfFc_tWCyX5FAeM";
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 1. Check Auth Status on Load
+    // Initialize client with a unique name to avoid syntax errors
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 1. Check Session on Load
     window.onload = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await _supabase.auth.getSession();
         if (session) { showAdmin(); } else { showLogin(); }
     };
 
+    // 2. Authentication Functions
     async function handleLogin() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) alert(error.message); else showAdmin();
+        const { error } = await _supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+            alert("Login Error: " + error.message);
+        } else {
+            showAdmin();
+        }
     }
 
     async function handleLogout() {
-        await supabase.auth.signOut();
+        await _supabase.auth.signOut();
         location.reload();
     }
 
@@ -101,16 +132,18 @@
         loadConsultants();
     }
 
+    // 3. Database Functions
     async function loadConsultants() {
-        const { data, error } = await supabase.from('consultants').select('*');
-        if (error) return console.error(error);
+        const { data, error } = await _supabase.from('consultants').select('*');
+        if (error) return console.error("Load Error:", error);
+        
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = data.map(c => `
             <tr>
-                <td>${c.Name}</td>
-                <td>${Array.isArray(c.Skills) ? c.Skills.join(', ') : c.Skills}</td>
+                <td><strong>${c.Name}</strong></td>
+                <td>${c.Specialization}</td>
                 <td>${c.Geography}</td>
-                <td>${c.Availability}</td>
+                <td>${Array.isArray(c.Skills) ? c.Skills.join(', ') : c.Skills}</td>
                 <td>
                     <button class="btn btn-danger" onclick="deleteConsultant('${c.Name}')">Delete</button>
                 </td>
@@ -119,7 +152,9 @@
     }
 
     async function addConsultant() {
+        // Convert comma string to Array for the database
         const skillsArray = document.getElementById('newSkills').value.split(',').map(s => s.trim());
+        
         const newEntry = {
             Name: document.getElementById('newName').value,
             Age: parseInt(document.getElementById('newAge').value),
@@ -132,13 +167,20 @@
             Partnership: document.getElementById('newPartner').value
         };
 
-        const { error } = await supabase.from('consultants').insert([newEntry]);
-        if (error) alert("Error: " + error.message); else loadConsultants();
+        const { error } = await _supabase.from('consultants').insert([newEntry]);
+        if (error) {
+            alert("Save Error: " + error.message);
+        } else {
+            alert("Consultant added successfully!");
+            loadConsultants();
+            // Clear inputs
+            document.querySelectorAll('.form-grid input').forEach(i => i.value = '');
+        }
     }
 
     async function deleteConsultant(name) {
-        if (confirm(`Are you sure you want to delete ${name}?`)) {
-            const { error } = await supabase.from('consultants').delete().eq('Name', name);
+        if (confirm(`Permanent Delete: ${name}?`)) {
+            const { error } = await _supabase.from('consultants').delete().eq('Name', name);
             if (error) alert(error.message); else loadConsultants();
         }
     }
