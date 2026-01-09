@@ -3,42 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CGC Admin Portal | AI Data Entry</title>
+    <title>CGC Admin Portal | God-Tier DB Manager</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
         
-        /* Main Layout Grid */
+        /* Main Dashboard Layout */
         .dashboard-wrapper { display: grid; grid-template-columns: 1fr 380px; gap: 20px; max-width: 1400px; margin: 0 auto; }
         .main-content { min-width: 0; }
         
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        h2, h3 { color: var(--primary); margin-top: 0; }
         
         /* AI Sidebar Styling */
         .ai-sidebar { height: 90vh; display: flex; flex-direction: column; background: #1e293b; color: white; border-radius: 12px; position: sticky; top: 20px; border: 1px solid #334155; }
-        .ai-header { padding: 15px; background: #0f172a; border-radius: 12px 12px 0 0; border-bottom: 1px solid #334155; }
-        #aiMessages { flex: 1; padding: 15px; overflow-y: auto; font-size: 14px; display: flex; flex-direction: column; gap: 10px; }
+        .ai-header { padding: 15px; background: #0f172a; border-radius: 12px 12px 0 0; border-bottom: 1px solid #334155; text-align: center; }
+        #aiMessages { flex: 1; padding: 15px; overflow-y: auto; font-size: 14px; display: flex; flex-direction: column; gap: 12px; }
         .ai-input-area { padding: 15px; background: #0f172a; border-radius: 0 0 12px 12px; display: flex; gap: 8px; }
         .ai-input-area input { flex: 1; background: #1e293b; border: 1px solid #475569; color: white; padding: 10px; border-radius: 6px; outline: none; }
         
-        /* Existing Form & Table Styles */
-        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        /* Form & Table Styles */
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #64748b; }
         input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
-        .btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; }
+        th, td { text-align: left; padding: 14px; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f1f5f9; font-weight: 600; font-size: 13px; text-transform: uppercase; }
+        
+        /* Buttons */
+        .btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: #ef4444; color: white; font-size: 12px; padding: 5px 10px; }
         
         #admin-wrapper, #auth-section { display: none; }
-        .login-card { max-width: 400px; margin: 100px auto; text-align: center; }
+        .login-card { max-width: 400px; margin: 100px auto; text-align: center; grid-column: span 2; }
     </style>
 </head>
 <body>
 
 <div id="auth-section" class="card login-card">
     <h2>CGC Admin Login</h2>
+    <p>Authentication required for database access.</p>
     <input type="email" id="email" placeholder="Admin Email" style="margin-bottom:10px">
     <input type="password" id="password" placeholder="Password" style="margin-bottom:20px">
     <button class="btn btn-primary" onclick="handleLogin()">Sign In</button>
@@ -54,23 +60,25 @@
         <div class="card">
             <h3>Consultant Entry Form</h3>
             <div class="form-grid">
-                <div><label>Name</label><input type="text" id="newName"></div>
-                <div><label>Age</label><input type="number" id="newAge"></div>
-                <div><label>Experience</label><input type="text" id="newExp"></div>
-                <div><label>Specialization</label><input type="text" id="newSpec"></div>
-                <div><label>Geography</label><input type="text" id="newGeo"></div>
-                <div><label>Availability</label><input type="text" id="newAvail"></div>
-                <div><label>Contact</label><input type="text" id="newContact"></div>
-                <div><label>Partnership</label><input type="text" id="newPartner"></div>
-                <div style="grid-column: span 2"><label>Skills</label><input type="text" id="newSkills"></div>
+                <div class="form-group"><label>Full Name</label><input type="text" id="newName"></div>
+                <div class="form-group"><label>Age</label><input type="number" id="newAge"></div>
+                <div class="form-group"><label>Experience</label><input type="text" id="newExp"></div>
+                <div class="form-group"><label>Specialization</label><input type="text" id="newSpec"></div>
+                <div class="form-group"><label>Geography</label><input type="text" id="newGeo"></div>
+                <div class="form-group"><label>Availability</label><input type="text" id="newAvail"></div>
+                <div class="form-group"><label>Contact</label><input type="text" id="newContact"></div>
+                <div class="form-group"><label>Partnership</label><input type="text" id="newPartner"></div>
+                <div class="form-group" style="grid-column: span 2"><label>Skills (comma separated)</label><input type="text" id="newSkills"></div>
             </div>
-            <button class="btn btn-primary" style="margin-top:20px" onclick="addConsultant()">Save to Database</button>
+            <button class="btn btn-primary" onclick="addConsultant()">Save to Database</button>
         </div>
 
         <div class="card">
-            <h3>Registry</h3>
+            <h3>Consultant Registry</h3>
             <table>
-                <thead><tr><th>Name</th><th>Specialization</th><th>Geography</th><th>Action</th></tr></thead>
+                <thead>
+                    <tr><th>Name</th><th>Specialization</th><th>Geography</th><th>Actions</th></tr>
+                </thead>
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
@@ -78,16 +86,16 @@
 
     <div class="ai-sidebar">
         <div class="ai-header">
-            <strong>CGC Data Intelligence</strong><br>
-            <small style="opacity:0.7">Extract info from CVs or notes</small>
+            <strong>God-Tier DB Manager</strong><br>
+            <small style="opacity:0.7">Paste CVs, Delete, or Alter Tables</small>
         </div>
         <div id="aiMessages">
             <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-                Hello Admin. You can paste a full CV here or simply say: "I met a consultant named Sarah from Berlin who specializes in Finance..."
+                Ready for commands. I can extract data from CVs, delete records by name, or suggest SQL schema updates.
             </div>
         </div>
         <div class="ai-input-area">
-            <input type="text" id="aiInput" placeholder="Paste CV text here..." onkeypress="if(event.key==='Enter') chatWithAI()">
+            <input type="text" id="aiInput" placeholder="Command AI..." onkeypress="if(event.key==='Enter') chatWithAI()">
             <button class="btn btn-primary" onclick="chatWithAI()">Go</button>
         </div>
     </div>
@@ -98,7 +106,7 @@
     const S_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpdWdsenNqeXpvZ2ZwcWpsaHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MzY3MjAsImV4cCI6MjA4MzIxMjcyMH0.P45KBpD1fbLu3tCu5Cbt31m0vhcTQfFc_tWCyX5FAeM";
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
-    // SECURITY: Force logout on page refresh
+    // SECURITY: Logout on refresh as requested [cite: 2026-01-05]
     window.onload = async () => {
         await _supabase.auth.signOut();
         showLogin();
@@ -112,17 +120,8 @@
     }
 
     function handleLogout() { location.reload(); }
-
-    function showLogin() { 
-        document.getElementById('auth-section').style.display = 'block';
-        document.getElementById('admin-wrapper').style.display = 'none';
-    }
-    
-    function showAdmin() {
-        document.getElementById('auth-section').style.display = 'none';
-        document.getElementById('admin-wrapper').style.display = 'grid';
-        loadConsultants();
-    }
+    function showLogin() { document.getElementById('auth-section').style.display = 'block'; document.getElementById('admin-wrapper').style.display = 'none'; }
+    function showAdmin() { document.getElementById('auth-section').style.display = 'none'; document.getElementById('admin-wrapper').style.display = 'grid'; loadConsultants(); }
 
     async function chatWithAI() {
         const input = document.getElementById('aiInput');
@@ -130,41 +129,58 @@
         const text = input.value.trim();
         if(!text) return;
 
-        box.innerHTML += `<div style="text-align:right; font-weight:bold;">Admin: ${text.substring(0, 50)}...</div>`;
+        box.innerHTML += `<div style="text-align:right; margin: 5px 0; color: #94a3b8;"><b>Admin:</b> ${text.substring(0,100)}...</div>`;
         input.value = "";
 
-        // Calling the AI to extract data
+        // The AI System Logic [cite: 2026-01-05]
+        const systemPrompt = `You are a God-Tier Database Manager.
+        Schema: consultants (name, age, experience, skills, specialization, geography, availability, contact, partnership).
+        INTENTS:
+        1. If user adds/pastes CV: Return JSON { "action": "ADD", "data": { ...extracted info... } }.
+        2. If user deletes: Return JSON { "action": "DELETE", "targetName": "exact name" }.
+        3. If user asks about new tables/keys: Return JSON { "action": "SCHEMA", "instruction": "SQL/Architect advice" }.
+        Return ONLY the JSON. TEXT: ${text}`;
+
         const response = await fetch(`${S_URL}/functions/v1/chat-with-ai`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${S_KEY}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                message: `Task: Extract consultant details. Return ONLY a valid JSON object with keys: name, age, experience, specialization, geography, availability, contact, partnership, and skills (as array). Use 'N/A' for missing fields. TEXT: ${text}`,
-                history: [] 
-            })
+            body: JSON.stringify({ message: systemPrompt, history: [] })
         });
 
         const data = await response.json();
         try {
-            // Find the JSON block in AI reply
             const jsonMatch = data.reply.match(/\{[\s\S]*\}/);
-            const parsed = JSON.parse(jsonMatch[0]);
-            
-            // Map JSON to the visible Form fields
-            document.getElementById('newName').value = parsed.name || "";
-            document.getElementById('newAge').value = parsed.age || "";
-            document.getElementById('newExp').value = parsed.experience || "";
-            document.getElementById('newSpec').value = parsed.specialization || "";
-            document.getElementById('newGeo').value = parsed.geography || "";
-            document.getElementById('newAvail').value = parsed.availability || "";
-            document.getElementById('newContact').value = parsed.contact || "";
-            document.getElementById('newPartner').value = parsed.partnership || "";
-            document.getElementById('newSkills').value = Array.isArray(parsed.skills) ? parsed.skills.join(', ') : "";
+            const res = JSON.parse(jsonMatch[0]);
 
-            box.innerHTML += `<div style="background:#22c55e; padding:10px; border-radius:8px; color:white;">AI: I've extracted the data for <b>${parsed.name}</b>. Please review the form and click "Save to Database" to confirm.</div>`;
+            if (res.action === "ADD") {
+                fillForm(res.data);
+                box.innerHTML += `<div style="color:#4ade80"><b>AI:</b> Form mapped for ${res.data.name || 'consultant'}. Review and Save.</div>`;
+            } 
+            else if (res.action === "DELETE") {
+                if (confirm(`AI suggests deleting ${res.targetName}. Confirm?`)) {
+                    await deleteConsultant(res.targetName);
+                    box.innerHTML += `<div style="color:#f87171"><b>AI:</b> Successfully purged ${res.targetName}.</div>`;
+                }
+            }
+            else if (res.action === "SCHEMA") {
+                box.innerHTML += `<div style="color:#60a5fa; border-left: 2px solid #60a5fa; padding-left: 10px;"><b>Architect:</b> ${res.instruction}</div>`;
+            }
         } catch(e) {
-            box.innerHTML += `<div style="color:#ef4444;">AI: I couldn't format the data automatically. Reply: ${data.reply}</div>`;
+            box.innerHTML += `<div><b>AI:</b> ${data.reply}</div>`;
         }
         box.scrollTop = box.scrollHeight;
+    }
+
+    function fillForm(d) {
+        document.getElementById('newName').value = d.name || "";
+        document.getElementById('newAge').value = d.age || "";
+        document.getElementById('newExp').value = d.experience || "";
+        document.getElementById('newSpec').value = d.specialization || "";
+        document.getElementById('newGeo').value = d.geography || "";
+        document.getElementById('newAvail').value = d.availability || "";
+        document.getElementById('newContact').value = d.contact || "";
+        document.getElementById('newPartner').value = d.partnership || "";
+        document.getElementById('newSkills').value = Array.isArray(d.skills) ? d.skills.join(', ') : (d.skills || "");
     }
 
     async function loadConsultants() {
@@ -175,7 +191,7 @@
                 <td><strong>${c.name}</strong></td>
                 <td>${c.specialization}</td>
                 <td>${c.geography}</td>
-                <td><button class="btn" style="background:#ef4444; color:white" onclick="deleteConsultant('${c.name}')">Delete</button></td>
+                <td><button class="btn btn-danger" onclick="deleteConsultant('${c.name}')">Delete</button></td>
             </tr>
         `).join('');
     }
@@ -183,7 +199,7 @@
     async function addConsultant() {
         const entry = {
             name: document.getElementById('newName').value,
-            age: parseInt(document.getElementById('newAge').value),
+            age: parseInt(document.getElementById('newAge').value) || 0,
             experience: document.getElementById('newExp').value,
             specialization: document.getElementById('newSpec').value,
             geography: document.getElementById('newGeo').value,
@@ -196,16 +212,12 @@
         if(error) alert(error.message); else { alert("Saved!"); loadConsultants(); clearForm(); }
     }
 
-    function clearForm() {
-        document.querySelectorAll('.form-grid input').forEach(i => i.value = "");
+    async function deleteConsultant(name) {
+        const { error } = await _supabase.from('consultants').delete().eq('name', name);
+        if (error) alert(error.message); else loadConsultants();
     }
 
-    async function deleteConsultant(name) {
-        if(confirm(`Delete ${name}?`)) {
-            await _supabase.from('consultants').delete().eq('name', name);
-            loadConsultants();
-        }
-    }
+    function clearForm() { document.querySelectorAll('.form-grid input').forEach(i => i.value = ""); }
 </script>
 </body>
 </html>
