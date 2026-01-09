@@ -3,116 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CGC Admin | God-Tier Intelligence</title>
+    <title>CGC Admin | God-Tier DB Engine</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --primary: #2563eb; 
-            --user-bubble: #007aff; 
-            --ai-bubble: #f1f5f9; 
-            --bg: #f8fafc; 
-            --sidebar-bg: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-        }
+        :root { --primary: #2563eb; --user-msg: #007aff; --ai-msg: #f1f5f9; --bg: #f8fafc; --text: #1e293b; --muted: #64748b; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-
-        /* Navigation Header */
-        header { 
-            background: white; padding: 1rem 2rem; border-bottom: 1px solid #e2e8f0; 
-            display: flex; justify-content: space-between; align-items: center; z-index: 100;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-        }
+        /* Header */
+        header { background: white; padding: 1rem 2rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
         .logo { font-weight: 800; font-size: 1.2rem; color: var(--primary); letter-spacing: -0.8px; }
 
-        /* Dashboard Layout */
+        /* Layout */
         .app-layout { display: flex; flex: 1; overflow: hidden; }
-        
-        /* Left Side: Professional Data Workspace */
         .main-workspace { flex: 1; padding: 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 2rem; }
+        
+        /* Elements */
         .card { background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
-        .card-header { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2rem; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+        .card-header { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; letter-spacing: 1px; }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
+        .input-group label { display: block; font-size: 0.7rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--muted); text-transform: uppercase; }
+        input { width: 100%; padding: 0.8rem; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.9rem; background: #fafafa; box-sizing: border-box; transition: 0.2s; }
+        input:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.05); }
 
-        /* Organized Form Grid */
-        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
-        .input-group label { display: block; font-size: 0.7rem; font-weight: 700; margin-bottom: 0.6rem; color: var(--text-muted); text-transform: uppercase; }
-        input { 
-            width: 100%; padding: 0.8rem 1rem; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.95rem; 
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; background: #fafafa;
-        }
-        input:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08); }
-
-        /* Registry Table */
-        .table-container { margin-top: 1rem; border-radius: 12px; border: 1px solid #f1f5f9; overflow: hidden; }
+        /* Table */
+        .table-container { border-radius: 12px; border: 1px solid #f1f5f9; overflow: hidden; margin-top: 1rem; }
         table { width: 100%; border-collapse: collapse; background: white; }
-        th { text-align: left; font-size: 0.7rem; color: var(--text-muted); padding: 1.2rem; border-bottom: 1px solid #f1f5f9; background: #fafafa; }
-        td { padding: 1.2rem; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
+        th { text-align: left; font-size: 0.7rem; color: var(--muted); padding: 1rem; background: #fafafa; border-bottom: 1px solid #f1f5f9; }
+        td { padding: 1rem; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
 
-        /* Right Side: God-Tier AI Sidebar */
-        .chat-sidebar { 
-            width: 420px; background: var(--sidebar-bg); border-left: 1px solid #e2e8f0; 
-            display: flex; flex-direction: column; box-shadow: -10px 0 30px rgba(0,0,0,0.02);
-        }
-        .chat-header { padding: 1.5rem; border-bottom: 1px solid #e2e8f0; background: #fff; }
-        .chat-messages { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.2rem; background: #fff; }
+        /* AI Sidebar */
+        .chat-sidebar { width: 420px; background: white; border-left: 1px solid #e2e8f0; display: flex; flex-direction: column; }
+        .chat-messages { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
+        .msg { max-width: 85%; padding: 0.9rem 1.1rem; border-radius: 18px; font-size: 0.88rem; line-height: 1.5; word-wrap: break-word; }
+        .msg.user { align-self: flex-end; background: var(--user-msg); color: white; border-bottom-right-radius: 4px; }
+        .msg.ai { align-self: flex-start; background: var(--ai-msg); color: var(--text); border-bottom-left-radius: 4px; border: 1px solid #e2e8f0; }
         
-        /* Aesthetic Speech Bubbles */
-        .msg { max-width: 85%; padding: 1rem 1.2rem; border-radius: 20px; font-size: 0.9rem; line-height: 1.5; position: relative; word-wrap: break-word; }
-        .msg.user { align-self: flex-end; background: var(--user-bubble); color: white; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2); }
-        .msg.ai { align-self: flex-start; background: var(--ai-bubble); color: var(--text-main); border-bottom-left-radius: 4px; border: 1px solid #e2e8f0; }
-        
-        .chat-input-area { padding: 1.5rem; border-top: 1px solid #e2e8f0; display: flex; gap: 0.8rem; background: white; }
-        .chat-input-area input { flex: 1; border-radius: 30px; padding: 0.9rem 1.5rem; background: #f4f4f7; border: 1px solid transparent; transition: 0.3s; }
-        .chat-input-area input:focus { background: #fff; border-color: var(--primary); }
+        .chat-input-area { padding: 1.5rem; border-top: 1px solid #e2e8f0; display: flex; gap: 0.8rem; }
+        .chat-input-area input { flex: 1; border-radius: 30px; padding: 0.8rem 1.2rem; background: #f4f4f7; border: none; }
 
-        /* Buttons */
-        .btn { 
-            padding: 0.8rem 1.5rem; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; 
-            font-size: 0.9rem; transition: all 0.3s ease; 
-        }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3); }
-        .btn-danger { background: #fee2e2; color: #dc2626; font-size: 0.8rem; padding: 0.5rem 1rem; }
-        .btn-danger:hover { background: #ef4444; color: white; }
+        .btn { padding: 0.8rem 1.5rem; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; transition: 0.3s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: #fee2e2; color: #dc2626; font-size: 0.75rem; padding: 0.4rem 0.8rem; }
 
-        #auth-section { display: flex; align-items: center; justify-content: center; height: 100vh; background: #f8fafc; }
+        #auth-section { display: flex; align-items: center; justify-content: center; height: 100vh; }
         #admin-wrapper { display: none; height: 100vh; flex-direction: column; }
-
-        /* Loading Indicator */
-        .typing { font-size: 0.8rem; color: var(--text-muted); italic; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div id="auth-section">
-    <div class="card" style="width: 360px; text-align: center;">
-        <div class="logo" style="margin-bottom: 1rem; font-size: 1.5rem;">CGC ADMIN</div>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Authorized Personnel Only</p>
-        <div class="input-group" style="text-align: left; margin-bottom: 1rem;">
-            <label>Email Address</label>
-            <input type="email" id="email" placeholder="admin@cgc.com">
-        </div>
-        <div class="input-group" style="text-align: left; margin-bottom: 2rem;">
-            <label>Secure Password</label>
-            <input type="password" id="password" placeholder="••••••••">
-        </div>
-        <button class="btn btn-primary" style="width: 100%;" onclick="handleLogin()">Enter Console</button>
+    <div class="card" style="width: 340px; text-align: center;">
+        <div class="logo" style="margin-bottom: 2rem; font-size: 1.4rem;">CGC SYSTEM</div>
+        <input type="email" id="email" placeholder="Email" style="margin-bottom:1rem">
+        <input type="password" id="password" placeholder="Password" style="margin-bottom:2rem">
+        <button class="btn btn-primary" style="width: 100%;" onclick="handleLogin()">Authorize</button>
     </div>
 </div>
 
 <div id="admin-wrapper">
     <header>
-        <div class="logo">CGC // DATABASE MANAGER</div>
-        <button class="btn" style="color: var(--text-muted); font-size: 0.8rem;" onclick="handleLogout()">TERMINATE SESSION</button>
+        <div class="logo">CGC // INTEL</div>
+        <button class="btn" style="color: var(--muted); font-size: 0.8rem;" onclick="handleLogout()">TERMINATE SESSION</button>
     </header>
-
     <div class="app-layout">
         <main class="main-workspace">
             <div class="card">
-                <div class="card-header"><span>✦</span> New Consultant Onboarding</div>
-                <div class="form-grid" id="consultantForm">
+                <div class="card-header">Data Entry</div>
+                <div class="form-grid">
                     <div class="input-group"><label>Name</label><input type="text" id="newName"></div>
                     <div class="input-group"><label>Age</label><input type="number" id="newAge"></div>
                     <div class="input-group"><label>Experience</label><input type="text" id="newExp"></div>
@@ -121,33 +80,27 @@
                     <div class="input-group"><label>Availability</label><input type="text" id="newAvail"></div>
                     <div class="input-group"><label>Contact</label><input type="text" id="newContact"></div>
                     <div class="input-group"><label>Partnership</label><input type="text" id="newPartner"></div>
-                    <div class="input-group" style="grid-column: span 2;"><label>Technical Skills</label><input type="text" id="newSkills" placeholder="Skill 1, Skill 2, Skill 3..."></div>
+                    <div class="input-group" style="grid-column: span 2;"><label>Skills</label><input type="text" id="newSkills"></div>
                 </div>
-                <button class="btn btn-primary" style="margin-top: 2rem;" onclick="addConsultant()">Commit Record</button>
+                <button class="btn btn-primary" style="margin-top: 1.5rem;" onclick="addConsultant()">Commit Record</button>
             </div>
-
             <div class="card">
-                <div class="card-header"><span>✦</span> Global Registry</div>
+                <div class="card-header">Consultant Registry</div>
                 <div class="table-container">
                     <table>
-                        <thead><tr><th>Full Name</th><th>Expertise</th><th>Location</th><th>Management</th></tr></thead>
+                        <thead><tr><th>Name</th><th>Specialization</th><th>Location</th><th>Action</th></tr></thead>
                         <tbody id="tableBody"></tbody>
                     </table>
                 </div>
             </div>
         </main>
-
         <aside class="chat-sidebar">
-            <div class="chat-header">
-                <div style="font-weight: 700; font-size: 1rem; color: var(--text-main);">AI Architect</div>
-                <div style="font-size: 0.75rem; color: #22c55e; font-weight: 600;">System Active</div>
-            </div>
             <div class="chat-messages" id="aiMessages">
-                <div class="msg ai">Welcome, Admin. Paste a CV to auto-fill the form, or command me to delete records. I am synced with the <b>consultants</b> table.</div>
+                <div class="msg ai"><b>System Ready.</b> I have access to the full database. I can resolve duplicate names and execute targeted deletions via Unique ID.</div>
             </div>
             <div class="chat-input-area">
-                <input type="text" id="aiInput" placeholder="Command AI..." onkeypress="if(event.key==='Enter') chatWithAI()">
-                <button class="btn btn-primary" style="border-radius: 50%; width: 45px; height: 45px; padding: 0; flex-shrink: 0;" onclick="chatWithAI()">↑</button>
+                <input type="text" id="aiInput" placeholder="Send command..." onkeypress="if(event.key==='Enter') chatWithAI()">
+                <button class="btn btn-primary" style="border-radius: 50%; width: 42px; height: 42px; padding: 0;" onclick="chatWithAI()">↑</button>
             </div>
         </aside>
     </div>
@@ -158,18 +111,13 @@
     const S_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpdWdsenNqeXpvZ2ZwcWpsaHZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MzY3MjAsImV4cCI6MjA4MzIxMjcyMH0.P45KBpD1fbLu3tCu5Cbt31m0vhcTQfFc_tWCyX5FAeM";
     const _supabase = supabase.createClient(S_URL, S_KEY);
 
-    // SECURITY: Force clear session on refresh
-    window.onload = async () => {
-        await _supabase.auth.signOut();
-        document.getElementById('auth-section').style.display = 'flex';
-        document.getElementById('admin-wrapper').style.display = 'none';
-    };
+    window.onload = async () => { await _supabase.auth.signOut(); document.getElementById('auth-section').style.display = 'flex'; };
 
     async function handleLogin() {
         const e = document.getElementById('email').value;
         const p = document.getElementById('password').value;
         const { error } = await _supabase.auth.signInWithPassword({ email: e, password: p });
-        if (error) alert("Authorization Failed."); else {
+        if (error) alert("Access Denied"); else {
             document.getElementById('auth-section').style.display = 'none';
             document.getElementById('admin-wrapper').style.display = 'flex';
             loadConsultants();
@@ -184,22 +132,25 @@
         const text = input.value.trim();
         if(!text) return;
 
-        // Display User Bubble
         box.innerHTML += `<div class="msg user">${text}</div>`;
         input.value = "";
-        
-        // Add "Processing" State
-        const typingId = "type-" + Date.now();
-        box.innerHTML += `<div class="msg ai" id="${typingId}"><i>AI is analyzing database intent...</i></div>`;
+        const typingId = "t-" + Date.now();
+        box.innerHTML += `<div class="msg ai" id="${typingId}"><i>Processing...</i></div>`;
         box.scrollTop = box.scrollHeight;
 
-        const systemPrompt = `You are a God-Tier Database Agent. 
-        Current Context: consultants table (name, age, experience, skills, specialization, geography, availability, contact, partnership).
-        Tasks:
-        1. If user provides CV/data: Return ONLY JSON: {"action": "ADD", "data": {...}}
-        2. If user requests delete: Return ONLY JSON: {"action": "DELETE", "name": "Exact Name"}
-        3. If user chats/asks: Return helpful text.
-        NEVER fail to parse. Input: ${text}`;
+        // FETCH CURRENT DATA FOR AI CONTEXT [cite: 2026-01-05]
+        const { data: dbSnapshot } = await _supabase.from('consultants').select('id, name, specialization, geography');
+
+        const systemPrompt = `You are a God-Tier Database Manager. 
+        Current Records: ${JSON.stringify(dbSnapshot)}
+        
+        Logic:
+        1. If user says 'Delete [Name]': 
+           - If one match: Return JSON {"action":"DELETE", "id":"UUID", "name":"Name"}
+           - If multiple matches: Ask for specifics (Specialization/Location) to narrow it down.
+        2. If user provides CV: Return JSON {"action":"ADD", "data":{...}}
+        3. If no action: Respond naturally.
+        ALWAYS wrap JSON in {}. Input: ${text}`;
 
         try {
             const response = await fetch(`${S_URL}/functions/v1/chat-with-ai`, {
@@ -207,31 +158,29 @@
                 headers: { 'Authorization': `Bearer ${S_KEY}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: systemPrompt, history: [] })
             });
-            const data = await response.json();
+            const result = await response.json();
             const bubble = document.getElementById(typingId);
-
-            // BULLETPROOF SANITIZER: Find JSON inside any text
-            const jsonMatch = data.reply.match(/\{[\s\S]*\}/);
+            
+            const jsonMatch = result.reply.match(/\{[\s\S]*\}/);
 
             if (jsonMatch) {
                 const res = JSON.parse(jsonMatch[0]);
                 if (res.action === "ADD") {
                     fillForm(res.data);
-                    bubble.innerHTML = `✨ Data extracted for <b>${res.data.name || 'New Consultant'}</b>. Form populated.`;
+                    bubble.innerHTML = `✨ Extracted data for <b>${res.data.name}</b>. Form ready for commit.`;
                 } else if (res.action === "DELETE") {
-                    bubble.innerHTML = `⚠️ Intent: Delete <b>${res.name}</b>. Awaiting manual confirmation...`;
-                    if(confirm("God-Tier Auth Required: Delete " + res.name + "?")) {
-                        await _supabase.from('consultants').delete().eq('name', res.name);
+                    bubble.innerHTML = `⚠️ Prepared to delete <b>${res.name}</b> (ID: ${res.id.substring(0,8)}).`;
+                    if(confirm("Confirm deletion of " + res.name + "?")) {
+                        await _supabase.from('consultants').delete().eq('id', res.id);
                         loadConsultants();
-                        bubble.innerHTML = `✅ Record for <b>${res.name}</b> has been purged.`;
+                        bubble.innerHTML = `🗑️ Successfully purged <b>${res.name}</b>.`;
                     }
                 }
             } else {
-                // If no JSON found, it's just a conversation
-                bubble.innerHTML = data.reply;
+                bubble.innerHTML = result.reply;
             }
         } catch(e) {
-            document.getElementById(typingId).innerHTML = "🤖 I encountered an issue. Try providing more specific data or a shorter text segment.";
+            document.getElementById(typingId).innerHTML = "System Error: AI Logic Fault.";
         }
         box.scrollTop = box.scrollHeight;
     }
@@ -251,12 +200,12 @@
     async function loadConsultants() {
         const { data } = await _supabase.from('consultants').select('*');
         const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = data.map(c => `
+        tbody.innerHTML = (data || []).map(c => `
             <tr>
                 <td><strong>${c.name}</strong></td>
                 <td>${c.specialization}</td>
                 <td>${c.geography}</td>
-                <td><button class="btn btn-danger" onclick="deleteConsultant('${c.name}')">Delete</button></td>
+                <td><button class="btn btn-danger" onclick="deleteById('${c.id}', '${c.name}')">Delete</button></td>
             </tr>
         `).join('');
     }
@@ -274,12 +223,12 @@
             skills: document.getElementById('newSkills').value.split(',').map(s => s.trim())
         };
         const { error } = await _supabase.from('consultants').insert([entry]);
-        if(error) alert(error.message); else { alert("Entry Committed!"); loadConsultants(); clearForm(); }
+        if(error) alert(error.message); else { loadConsultants(); clearForm(); }
     }
 
-    async function deleteConsultant(name) {
-        if(confirm("Confirm deletion of " + name + "?")) {
-            await _supabase.from('consultants').delete().eq('name', name);
+    async function deleteById(id, name) {
+        if(confirm("Permanently delete " + name + "?")) {
+            await _supabase.from('consultants').delete().eq('id', id);
             loadConsultants();
         }
     }
