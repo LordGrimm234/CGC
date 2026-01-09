@@ -120,11 +120,9 @@
         box.innerHTML += `<div class="msg ai" id="${tid}">...</div>`;
         box.scrollTop = box.scrollHeight;
 
-        // AUTH CHECK: Get the session token to prove identity to the backend
         const { data: sessionData } = await _supabase.auth.getSession();
         const token = sessionData?.session?.access_token;
 
-        // FETCH SNAPSHOT
         const { data: db } = await _supabase.from('consultants').select('id, name, specialization, geography');
 
         const systemPrompt = `YOU ARE A DB MANAGER. 
@@ -142,14 +140,14 @@
             const response = await fetch(`${S_URL}/functions/v1/chat-with-ai`, {
                 method: 'POST',
                 headers: { 
-                    'Authorization': `Bearer ${token}`, // Passing the Credential Token
+                    'apikey': S_KEY, // CRITICAL: This bypasses the 401 gateway error
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json' 
                 },
                 body: JSON.stringify({ message: systemPrompt, history: [] })
             });
             const resData = await response.json();
             
-            // Handle unauthorized error from backend
             if (resData.error) {
                 document.getElementById(tid).innerHTML = `<b>Error:</b> ${resData.error}`;
                 return;
@@ -176,7 +174,7 @@
                 bubble.innerHTML = resData.reply;
             }
         } catch(e) {
-            document.getElementById(tid).innerHTML = "System Busy. Please try again.";
+            document.getElementById(tid).innerHTML = "System Busy. Check your network or console.";
         }
         box.scrollTop = box.scrollHeight;
     }
